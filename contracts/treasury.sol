@@ -10,23 +10,27 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract treasury{
 
-    uint256 public exchangeRate;
     address dPOPAddress;
+    uint256 public exchangeRate;
+    uint256 public totalTokenHolders;
     mapping(address => uint256) public accountTokenBalances;
 
     event succesfulExchangeRate(uint256 rate);
-    event succesfulFundDeployment(address account, uint256 amount);
     event succesfulJoinTransfer(address account, uint256 amount);
     event succesfulExitTransfer(address account, uint256 amount);
+    event succesfulFundDeployment(address account, uint256 amount);
 
     constructor(address tokenAddress){
         dPOPAddress = tokenAddress;
+        totalTokenHolders = 0;
     }
 
     function transferdPOP(address _recipientAddress, uint256 _amount) public returns (bool) {
         ERC20(dPOPAddress).transfer(_recipientAddress, _amount);
 
         accountTokenBalances[_recipientAddress] = _amount; 
+
+        totalTokenHolders ++;
 
         emit succesfulJoinTransfer(_recipientAddress, _amount);
 
@@ -35,9 +39,7 @@ contract treasury{
 
     /// @notice sets exchange rate for dPOP/ETH which is decided by the community members
     /// @dev this private function sets/updates the exchangeRate variable
-    // @param just like in doxygen (must be followed by parameter name)
     /// @return true if the update was succesful
-    // @inheritdoc	Copies all missing tags from the base function (must be followed by the contract name)
 
     function setExchangeRate(uint256 _fxRate) private returns (bool) {
 
