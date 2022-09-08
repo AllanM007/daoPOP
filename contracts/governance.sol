@@ -54,6 +54,8 @@ contract governance{
         uint256 votes;
     }
 
+    enum voteOutcome {yes, maybe, no }
+
     event ProposalCreated(uint256 id, address proposer, string description, uint256 date, uint256 deadline);
 
     event ProposalCanceled(uint256 id);
