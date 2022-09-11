@@ -11,8 +11,11 @@ import "./treasury.sol";
 
 contract governance{
 
+    /// @notice dPOP token address parameter
     address public dPOPAddress;
+    /// @notice conditional integer to track vote count a proposal cannot go below
     uint256 public minVoteCount;
+    /// @notice conditional integer to track vote count a proposal has to achieve
     uint256 public maxVoteCount;
     /// @notice integer to track proposalCount
     uint256 private proposalCount;
@@ -65,6 +68,7 @@ contract governance{
 
     event MemberVote(address voter, uint256 proposalId, bool support, uint256 votes);
 
+    /// @notice this event is initiated when a proposal is succesfully executed
     event ProposalExecuted(uint256 id);
 
     constructor(address tknAddress){
@@ -108,41 +112,52 @@ contract governance{
     }
     function execute(uint256 _id) public returns (bool) {
         require(_id> proposalCount, "Invalid ID!!");
-        // require(proposal[_id].canceled == false, "Proposal is not active");
+        require(proposal[_id].active == true, "Proposal is not active");
         Proposal storage currentProposal = proposal[_id];
 
         currentProposal.executed = true;
 
+        emit ProposalExecuted(_id);
+
         return true;
     }
     function cancel(uint256 _id) public returns (bool) {
-        require(_id> proposalCount, "Invalid ID!!");
-
+        require(proposalCount > _id, "Invalid ID!!");
+    
         Proposal storage currentProposal = proposal[_id];
+        
+        require(currentProposal.active == true && currentProposal.canceled == false, "Proposal status is invalid!!");
 
         currentProposal.canceled = true;
+
+        emit ProposalCanceled(_id);
+
+        return true;
 
     }
     function getReceipts(uint256 _proposalId, address _member) public view returns (bool, bool, uint256) {
 
         Proposal storage currentProposal = proposal[_proposalId];
 
-        Receipt storage memberReceipt = receipts[_member];
+        if (currentProposal.proposer == _member) {
 
-        return (memberReceipt.hasVoted, memberReceipt.support, memberReceipt.votes);
+            Receipt storage memberReceipt = currentProposal.receipts[_member];
 
+            return (memberReceipt.hasVoted, memberReceipt.support, memberReceipt.votes);
+        } else {
+            return (false, false, 0);
+        }
     }
-    function getProposal(uint256 _proposalId, address _member) public view returns (bool) {
-        Proposal storage currentProposal = proposal[_proposalId];
+    // function getProposal(uint256 _proposalId, address _member) public view returns (/// @notice address of the proposer
+    //     address, bytes32, uint, uint, uint256, uint256, bool, bool, bool, mapping(address => Receipt) receipts;) {
+    //     Proposal storage currentProposal = proposal[_proposalId];
 
-        return true;
-    }
-    function getProposalResult(uint256 proposalId, address voter) public returns (bool) {
+    //     return true;
+    // }
+    function getProposalResult(uint256 proposalId) public view returns (uint, uint) {
         Proposal storage currentProposal = proposal[proposalId];
 
-        require(currentProposal.forVotes > currentProposal.againstVotes, "The ney's have it");
-
-        return true;
+        return(currentProposal.forVotes, currentProposal.againstVotes);
     }
     function state(uint256 _id) public view returns (bool) {
         Proposal storage currentProposal = proposal[_id];
@@ -150,7 +165,5 @@ contract governance{
         return currentProposal.active;
     }
     function voteProposal(uint256 _id, address _member, uint256 _forVote, uint256 _againstVote) public payable returns (bool) {}
-    
-    // function delegateTokens() public returns (bool) {}
-    
+        
 }
