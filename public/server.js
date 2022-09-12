@@ -51,6 +51,31 @@ router.get("/propose", function (req, res) {
   //__dirname : It will resolve to your project folder.
 });
 
+router.get("/vote", function (req, res) {
+  res.sendFile(path.join(__dirname + "/vote.html"));
+  //__dirname : It will resolve to your project folder.
+});
+
+router.get("/transfer", function (req, res) {
+  res.sendFile(path.join(__dirname + "/transfer.html"));
+});
+
+router.get("/mint", function (req, res) {
+  res.sendFile(path.join(__dirname + "/mint.html"));
+});
+
+router.get("/burn", function (req, res) {
+  res.sendFile(path.join(__dirname + "/burn.html"));
+});
+
+router.get("/community", function (req, res) {
+  res.sendFile(path.join(__dirname + "/community_dashboard.html"));
+});
+
+router.get("/pesonal", function (req, res) {
+  res.sendFile(path.join(__dirname + "/personal_dashboard.html"));
+});
+
 router.post("/sendProposal", function (req, res) {
   var data = req.body;
   console.log(data);
@@ -100,14 +125,6 @@ async function sendProposal(usrAddress, name, date, deadline) {
     console.log(error);
   }
 }
-
-router.get("/transfer", function (req, res) {
-  res.sendFile(path.join(__dirname + "/transfer.html"));
-});
-
-router.get("/mint", function (req, res) {
-  res.sendFile(path.join(__dirname + "/mint.html"));
-});
 
 router.get("/getVaultBalance", async function (req, res) {
   const vault = await collateralAdapterContract.Vault(
@@ -210,10 +227,6 @@ async function mintdPOP(usrAddress, mintAmount) {
   }
 }
 
-router.get("/burn", function (req, res) {
-  res.sendFile(path.join(__dirname + "/burn.html"));
-});
-
 router.post("/transferdPOP", function (req, res) {
   var data = req.body;
   console.log(data);
@@ -262,14 +275,6 @@ async function transferdPOP(usrAddress, burnAmount) {
     return error;
   }
 }
-
-router.get("/community", function (req, res) {
-  res.sendFile(path.join(__dirname + "/community_dashboard.html"));
-});
-
-router.get("/pesonal", function (req, res) {
-  res.sendFile(path.join(__dirname + "/personal_dashboard.html"));
-});
 
 router.get("/getProposals", async function (req, res) {
   proposals = []
