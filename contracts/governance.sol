@@ -11,7 +11,9 @@ import "./treasury.sol";
 
 contract governance{
 
-    /// @notice dPOP token address parameter
+    string public constant name = "daoPOP Governor Alpha";
+
+    /// @notice dPOP token address
     address public dPOPAddress;
     /// @notice conditional integer to track vote count a proposal cannot go below
     uint256 public minVoteCount;
@@ -66,7 +68,7 @@ contract governance{
 
     event ProposalCanceled(uint256 id);
 
-    event MemberVote(address voter, uint256 proposalId, bool support, uint256 votes);
+    event MemberVote(address voter, uint256 proposalId, bool support);
 
     /// @notice this event is initiated when a proposal is succesfully executed
     event ProposalExecuted(uint256 id);
@@ -76,40 +78,39 @@ contract governance{
         proposalCount = 0;
     }
 
-    /// @notice Explain to an end user what this does
-    /// @dev Explain to a developer any extra details
-    // @param Documents a parameter just like in doxygen (must be followed by parameter name)
-    // @return Documents the return variables of a contract’s function state variable
-    // @inheritdoc	Copies all missing tags from the base function (must be followed by the contract name)
-
+    /// @notice add a member to the D.A.O
     function addMember(address _member) public returns (bool) {
         memberAddresses[_member] =  true;
         return true;
     }
 
+    /// @notice check if member is part of the D.A.O
     function checkMember(address _account) public view returns (bool){
         return memberAddresses[_account];
     }
 
     function propose(address _proposer, bytes32 _name, uint256 _date, uint256 _deadline) public returns (bool) {
         require(memberAddresses[_proposer] =  true, "NonMember cannot propose!!");
-        uint256 currrentpProposalId = proposalCount;
-
-        // proposal[proposalCount++] = Proposal(
-        //     proposalCount++,
-        //     _proposer,
-        //     _name,
-        //     _date,
-        //     _deadline,
-        //     false,
-        //     false,
-        //     0,
-        //     receipts[_proposer] = 0
-        // );
-
 
         proposalCount++;
+        
+        uint currrentProposalId = proposalCount;
+
+        Proposal storage newProposal = proposal[currrentProposalId];
+
+        require(newProposal.id != 0, "Invalid proposal Id!");
+
+        newProposal.id = currrentProposalId;
+        newProposal.proposer = _proposer;
+        newProposal.name = _name;
+        newProposal.date = _date;
+        newProposal.deadline = _deadline;
+        newProposal.active = true;
+        newProposal.canceled = false;
+        newProposal.executed = false;
     }
+
+    /// @notice execute status of proposal once it's result is satisfactory
     function execute(uint256 _id) public returns (bool) {
         require(_id> proposalCount, "Invalid ID!!");
         require(proposal[_id].active == true, "Proposal is not active");
@@ -121,6 +122,8 @@ contract governance{
 
         return true;
     }
+
+    /// @notice cancel a proposal
     function cancel(uint256 _id) public returns (bool) {
         require(proposalCount > _id, "Invalid ID!!");
     
@@ -135,6 +138,8 @@ contract governance{
         return true;
 
     }
+    
+    /// @notice get vote receipts of specific proposal and member
     function getReceipts(uint256 _proposalId, address _member) public view returns (bool, bool, uint256) {
 
         Proposal storage currentProposal = proposal[_proposalId];
@@ -154,16 +159,44 @@ contract governance{
 
     //     return true;
     // }
+
+    /// @notice get the cumulative results of a proposal
     function getProposalResult(uint256 proposalId) public view returns (uint, uint) {
         Proposal storage currentProposal = proposal[proposalId];
 
         return(currentProposal.forVotes, currentProposal.againstVotes);
     }
+
+    /// @notice check the state of a proposal
     function state(uint256 _id) public view returns (bool) {
         Proposal storage currentProposal = proposal[_id];
 
         return currentProposal.active;
     }
-    function voteProposal(uint256 _id, address _member, uint256 _forVote, uint256 _againstVote) public payable returns (bool) {}
+
+    /// @notice member votes on a given proposal
+    function voteProposal(uint256 _id, address _member, bool _vote) public payable returns (bool) {
+
+        Proposal storage currentProposal = proposal[_id];
+        Receipt storage memberReceipt = currentProposal.receipts[_member];
+
+        require(currentProposal.active == true, "Proposal status is inactive!!");
+        require(memberReceipt.hasVoted == false, "Member has already voted on this proposal");
+
+        if (_vote) {
+
+            currentProposal.forVotes ++;
+
+        } else {
+            currentProposal.againstVotes ++;   
+        }
+
+        memberReceipt.hasVoted = true;
+        memberReceipt.support = _vote;
+        memberReceipt.votes ++;
+
+        emit MemberVote(_member, _id, _vote);
+
+    }
         
 }
