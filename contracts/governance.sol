@@ -34,7 +34,7 @@ contract governance{
         /// @notice address of the proposer
         address proposer;
         /// @notice name of the proposal
-        bytes32 name;
+        string name;
         /// @notice Current number of votes in favor of this proposal
         uint forVotes;
         /// @notice Current number of votes in opposition to this proposal
@@ -89,7 +89,7 @@ contract governance{
         return memberAddresses[_account];
     }
 
-    function propose(address _proposer, bytes32 _name, uint256 _date, uint256 _deadline) public returns (bool) {
+    function propose(address _proposer, string memory _name, uint256 _date, uint256 _deadline) public returns (uint256) {
         require(memberAddresses[_proposer] =  true, "NonMember cannot propose!!");
 
         proposalCount++;
@@ -108,6 +108,10 @@ contract governance{
         newProposal.active = true;
         newProposal.canceled = false;
         newProposal.executed = false;
+
+        emit ProposalCreated(currrentProposalId, _proposer, _name, _date, _deadline);
+
+        return currrentProposalId;
     }
 
     /// @notice execute status of proposal once it's result is satisfactory
