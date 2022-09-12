@@ -3,10 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @title A title that should describe the contract/interface
-/// @author The name of the author
-/// @notice Explain to an end user what this does
-/// @dev Explain to a developer any extra details
+/// @title dPOP governance token implementation contract
+/// @author Allan
+/// @notice basic ERC20 token for dPOP
 
 contract dPOP is ERC20{
     constructor(address treasuryAddress, uint256 tokenSupply) ERC20("daoPOP", "dPOP"){

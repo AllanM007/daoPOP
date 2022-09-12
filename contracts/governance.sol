@@ -4,10 +4,11 @@ pragma abicoder v2;
 
 import "./treasury.sol";
 
-/// @title A title that should describe the contract/interface
-/// @author The name of the author
-/// @notice Explain to an end user what this does
-/// @dev Explain to a developer any extra details
+/// @title dPOP Governance Contract
+/// @author Allan
+/// @notice This is the main governance implementation contract for daoPOP proposal/voting functions
+/// @dev Governance contract inspired by Compound Protocol's GovernorAlpha contract 
+/// https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/GovernorAlpha.sol
 
 contract governance{
 
@@ -89,6 +90,7 @@ contract governance{
         return memberAddresses[_account];
     }
 
+    /// @notice submit a proposal to the D.A.O for voting
     function propose(address _proposer, string memory _name, uint256 _date, uint256 _deadline) public returns (uint256) {
         require(memberAddresses[_proposer] =  true, "NonMember cannot propose!!");
 
