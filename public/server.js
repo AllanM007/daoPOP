@@ -72,7 +72,7 @@ router.get("/community", function (req, res) {
   res.sendFile(path.join(__dirname + "/community_dashboard.html"));
 });
 
-router.get("/pesonal", function (req, res) {
+router.get("/personal", function (req, res) {
   res.sendFile(path.join(__dirname + "/personal_dashboard.html"));
 });
 
