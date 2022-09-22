@@ -36,6 +36,8 @@ contract governance{
         address proposer;
         /// @notice name of the proposal
         string name;
+        /// @notice description of the proposal
+        string description;
         /// @notice Current number of votes in favor of this proposal
         uint forVotes;
         /// @notice Current number of votes in opposition to this proposal
@@ -65,7 +67,7 @@ contract governance{
 
     enum voteOutcome { yes, maybe, no }
 
-    event ProposalCreated(uint256 id, address proposer, string description, uint256 date, uint256 deadline);
+    event ProposalCreated(uint256 id, address proposer, string name, string description, uint256 date, uint256 deadline);
 
     event ProposalCanceled(uint256 id);
 
@@ -91,7 +93,7 @@ contract governance{
     }
 
     /// @notice submit a proposal to the D.A.O for voting
-    function propose(address _proposer, string memory _name, uint256 _date, uint256 _deadline) public returns (uint256) {
+    function propose(address _proposer, string memory _name, string memory _description, uint256 _date, uint256 _deadline) public returns (uint256) {
         require(memberAddresses[_proposer] =  true, "NonMember cannot propose!!");
 
         proposalCount++;
@@ -105,13 +107,14 @@ contract governance{
         newProposal.id = currrentProposalId;
         newProposal.proposer = _proposer;
         newProposal.name = _name;
+        newProposal.description = _description;
         newProposal.date = _date;
         newProposal.deadline = _deadline;
         newProposal.active = true;
         newProposal.canceled = false;
         newProposal.executed = false;
 
-        emit ProposalCreated(currrentProposalId, _proposer, _name, _date, _deadline);
+        emit ProposalCreated(currrentProposalId, _proposer, _name, _description, _date, _deadline);
 
         return currrentProposalId;
     }

@@ -17,6 +17,8 @@ app.use(
 const API_KEY = process.env.ALCHEMY_KEY;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
+// const dPOPTokenAddress = process.env.dPOPTokenAddress
+
 
 // const { json } = require("hardhat/internal/core/par
 const { ethers } = require("ethers");
@@ -35,11 +37,11 @@ const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 const gas_limit = "0x100000";
 
 // Token Contract
-const dPOPTokenContract = new ethers.Contract(
-  dPOPTokenAddress,
-  tokenABI.abi,
-  signer
-);
+// const dPOPTokenContract = new ethers.Contract(
+//   dPOPTokenAddress,
+//   tokenABI.abi,
+//   signer
+// );
 
 router.get("/", function (req, res) {
   res.sendFile(path.join(__dirname + "/index.html"));
@@ -82,19 +84,20 @@ router.post("/sendProposal", function (req, res) {
 
   var usrAddress = data.address;
   var name = data.name;
+  var description = description;
   var date = Date.now();
   var deadline = Date.now();
 
-  console.log("71.", usrAddress, name, date, deadline);
+  console.log("71.", usrAddress, name, description, date, deadline);
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(sendProposal(usrAddress, name, date, deadline));
+      resolve(sendProposal(usrAddress, name, description, date, deadline));
     }, 2000);
   });
 });
 
-async function sendProposal(usrAddress, name, date, deadline) {
+async function sendProposal(usrAddress, name, description, date, deadline) {
   const gasPrice = await alchemyProvider.getGasPrice();
 
   const formattedGasPrice = gasPrice.toString();
@@ -104,7 +107,7 @@ async function sendProposal(usrAddress, name, date, deadline) {
   try {
     const sendProposaltx = await governanceContract
       .connect(signer)
-      .propose(usrAddress, name, date, deadline, {
+      .propose(usrAddress, name, description, date, deadline, {
         gasLimit: 50000,
       });
 
