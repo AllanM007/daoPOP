@@ -21,6 +21,8 @@ contract participationAdpater{
     /// @notice mapping to track each member's participation value
     mapping(address => uint256) memberParticipationVal;
 
+    event SetEngagementMetrics();
+
     constructor(address _govContract){
         governanceContract = _govContract;
     }

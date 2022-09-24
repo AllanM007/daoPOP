@@ -129,6 +129,105 @@ async function sendProposal(usrAddress, name, description, date, deadline) {
   }
 }
 
+router.post("/sendProposalVote", function (req, res) {
+  var data = req.body;
+  console.log(data);
+
+  var usrAddress = data.address;
+  var proposalId = data.proposalId;
+  var vote = data.vote;
+  var date = Date.now();
+
+  console.log("71.", usrAddress, proposalId, vote, date);
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(sendProposalVote(proposalId, usrAddress, vote, date));
+    }, 2000);
+  });
+});
+
+async function sendProposalVote(proposalId, usrAddress, vote, date) {
+  const gasPrice = await alchemyProvider.getGasPrice();
+
+  const formattedGasPrice = gasPrice.toString();
+
+  console.log(formattedGasPrice);
+
+  try {
+    const sendProposalVotetx = await governanceContract
+      .connect(signer)
+      .voteProposal(proposalId, usrAddress, vote, date, {
+        gasLimit: 50000,
+      });
+
+    console.log(sendProposalVotetx);
+
+    const sendProposalVoteObject = await sendProposalVotetx.wait();
+
+    console.log(sendProposalVoteObject);
+
+    const proposalVoteObject = sendProposalVoteObject.events.find(
+      (event) => event.event === "MemberVote"
+    );
+
+    const [member, proposalId, vote] = proposalVoteObject.args;
+
+    console.log(member.toString(), proposalId, vote.toString());
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+router.post("/setEngagementMetrics", function (req, res) {
+  var data = req.body;
+  console.log(data);
+
+  var usrAddress = data.address;
+  var vote = data.vote;
+  var date = Date.now();
+
+  console.log("71.", usrAddress, vote, date);
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(setEngagementMetrics(usrAddress, vote, date));
+    }, 2000);
+  });
+});
+
+async function setEngagementMetrics(usrAddress, vote, date) {
+  const gasPrice = await alchemyProvider.getGasPrice();
+
+  const formattedGasPrice = gasPrice.toString();
+
+  console.log(formattedGasPrice);
+
+  try {
+    const sendEngagementMetricsVotetx = await participationAdpater
+      .connect(signer)
+      .voteProposal(proposalId, usrAddress, vote, date, {
+        gasLimit: 50000,
+      });
+
+    console.log(sendEngagementMetricsVotetx);
+
+    const sendEngagementVoteObject = await sendEngagementMetricsVotetx.wait();
+
+    console.log(sendEngagementVoteObject);
+
+    const engagementVoteObject = sendEngagementVoteObject.events.find(
+      (event) => event.event === "SetEngagementMetrics"
+    );
+
+    const [member, proposalId, vote] = proposalVoteObject.args;
+
+    console.log(member.toString(), proposalId, vote.toString());
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 router.get("/getVaultBalance", async function (req, res) {
   const vault = await collateralAdapterContract.Vault(
     "0x15cdCBB08cd5b2543A8E009Dbf5a6C6d7D2aB53d"
