@@ -184,19 +184,21 @@ router.post("/setEngagementMetrics", function (req, res) {
   console.log(data);
 
   var usrAddress = data.address;
+  var proposal = data.proposal;
   var vote = data.vote;
+  var contribution = data.contribution;
   var date = Date.now();
 
-  console.log("71.", usrAddress, vote, date);
+  console.log("71.", usrAddress, proposal, vote, contribution, date);
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(setEngagementMetrics(usrAddress, vote, date));
+      resolve(setEngagementMetrics(usrAddress, proposal, vote, contribution, date));
     }, 2000);
   });
 });
 
-async function setEngagementMetrics(usrAddress, vote, date) {
+async function setEngagementMetrics(usrAddress, proposal, vote, contribution, date) {
   const gasPrice = await alchemyProvider.getGasPrice();
 
   const formattedGasPrice = gasPrice.toString();
@@ -206,7 +208,7 @@ async function setEngagementMetrics(usrAddress, vote, date) {
   try {
     const sendEngagementMetricsVotetx = await participationAdpater
       .connect(signer)
-      .voteProposal(proposalId, usrAddress, vote, date, {
+      .setMetrics(usrAddress, proposal, vote, contribution, date, {
         gasLimit: 50000,
       });
 
@@ -220,9 +222,9 @@ async function setEngagementMetrics(usrAddress, vote, date) {
       (event) => event.event === "SetEngagementMetrics"
     );
 
-    const [member, proposalId, vote] = proposalVoteObject.args;
+    const [member, proposalId, vote, contribution0] = engagementVoteObject.args;
 
-    console.log(member.toString(), proposalId, vote.toString());
+    console.log(member.toString(), proposalId, vote, contribution, date());
   } catch (error) {
     console.log(error);
   }
@@ -271,22 +273,20 @@ router.post("/mintdPOP", function (req, res) {
   });
 });
 
-async function calculatePositionHealthFactor(usrAddress) {
-
-  const collateralPrice = await oracleContract.price();
+async function calculateUserParticipation(usrAddress) {
 
   try {
-    const calculateHealthFactortx = await collateralAdapterContract
+    const calculateUserParticipationtx = await participationAdpater
       .connect(signer)
-      .calculateHealthFactor(usrAddress, collateralPrice, { gasLimit: 1000000 });
+      .calculateUserParticipation(usrAddress, { gasLimit: 1000000 });
 
-    console.log(calculateHealthFactortx);
+    console.log(calculateUserParticipationtx);
 
-    const calculateHealthFactortxObject = await calculateHealthFactortx.wait();
+    const calculateUserParticipationtxtxObject = await calculateUserParticipationtx.wait();
 
-    console.log(calculateHealthFactortxObject);
+    console.log(calculateUserParticipationtxtxObject);
 
-    return "Calculation Succesful";
+    return "Participation Calculation Succesful";
   } catch (error) {
     console.log(error);
 
