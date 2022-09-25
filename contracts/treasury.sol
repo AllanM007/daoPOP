@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 import { 
     ISuperfluid 
-} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol"; //"@superfluid-finance/ethereum-monorepo/packages/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
 import { 
     IConstantFlowAgreementV1 
@@ -23,13 +23,19 @@ contract treasury{
 
     address dPOPAddress;
     uint256 public exchangeRate;
-    uint256 public totalTokenHolders;
+    int96 rewardRate;
+    // mapping(uint256 => address) public totalTokenHolders;
+    address[] public tokenHolders;
+    uint256 tokenHolderCount;
     mapping(address => uint256) public accountTokenBalances;
 
     event succesfulExchangeRate(uint256 rate);
     event succesfulJoinTransfer(address account, uint256 amount);
     event succesfulExitTransfer(address account, uint256 amount);
     event succesfulFundDeployment(address account, uint256 amount);
+    event succesfulCreateReturnsFlow(address, address, int96);
+    event succesfulUpdateReturnsFlow(address, address, int96);
+    event succesfulDeleteReturnsFlow(address, address, int96);
 
     using CFAv1Library for CFAv1Library.InitData;
     
@@ -42,7 +48,7 @@ contract treasury{
     ) {
     
     dPOPAddress = tokenAddress;
-    totalTokenHolders = 0;
+    // totalTokenHolders = 0;
     
     //initialize InitData struct, and set equal to cfaV1
     cfaV1 = CFAv1Library.InitData(
@@ -61,7 +67,9 @@ contract treasury{
 
         accountTokenBalances[_recipientAddress] = _amount; 
 
-        totalTokenHolders ++;
+        tokenHolders.push(_recipientAddress);
+
+        tokenHolderCount++;
 
         emit succesfulJoinTransfer(_recipientAddress, _amount);
 
@@ -98,6 +106,49 @@ contract treasury{
 
         emit succesfulExitTransfer(_recipientAddress, _amount);
 
+        return true;
+    }
+
+    /// @notice set protocol returns reward rate to users
+    function setRewardRate() public returns (bool) {
+        uint256 protocolBalance = address(this).balance;
+        int96 protocolReward = int96(protocolBalance) / int96(tokenHolderCount);
+        return true;
+    }
+
+    /// @notice this function distributes returns from the protocol's investment equally to each member based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function initiateReturnFlow() public returns (bool) {
+
+        for (uint256 index = 0; index < tokenHolders.length; index++) {
+            
+            cfaV1.createFlow(tokenHolders[index], dPOPAddress, rewardRate);
+
+            emit succesfulCreateReturnsFlow(tokenHolders[index], dPOPAddress, rewardRate);
+        }
+
+        return true;
+    }
+
+    /// @notice this function updates a members token distribution flow based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function updateReturnFlow(address _member, int96 _flowRate) public returns (bool) {
+
+        cfaV1.updateFlow(_member, dPOPAddress, _flowRate);
+
+        emit succesfulUpdateReturnsFlow(_member, dPOPAddress, _flowRate);
+
+        return true;
+    }
+
+    /// @notice this function deletes a members token distribution flow based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function deleteReturnFlow(address _member) public returns (bool) {
+
+        cfaV1.deleteFlow(address(0), _member, dPOPAddress);
+
+        emit succesfulDeleteReturnsFlow(address(0), _member, dPOPAddress);
+        
         return true;
     }
 }
