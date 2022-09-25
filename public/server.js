@@ -70,6 +70,10 @@ router.get("/burn", function (req, res) {
   res.sendFile(path.join(__dirname + "/burn.html"));
 });
 
+router.get("/set-metrics", function (req, res) {
+  res.sendFile(path.join(__dirname + "/setEngagementMetrics.html"));
+});
+
 router.get("/community", function (req, res) {
   res.sendFile(path.join(__dirname + "/community_dashboard.html"));
 });
