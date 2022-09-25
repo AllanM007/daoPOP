@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
+import { 
+    ISuperfluid 
+} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol"; //"@superfluid-finance/ethereum-monorepo/packages/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
+import { 
+    IConstantFlowAgreementV1 
+} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
+
+import {
+    CFAv1Library
+} from "@superfluid-finance/ethereum-contracts/contracts/apps/CFAv1Library.sol";
+    
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /// @title A title that should describe the contract/interface
@@ -20,9 +31,29 @@ contract treasury{
     event succesfulExitTransfer(address account, uint256 amount);
     event succesfulFundDeployment(address account, uint256 amount);
 
-    constructor(address tokenAddress){
-        dPOPAddress = tokenAddress;
-        totalTokenHolders = 0;
+    using CFAv1Library for CFAv1Library.InitData;
+    
+    //initialize cfaV1 variable
+    CFAv1Library.InitData public cfaV1;
+    
+    constructor(
+        address tokenAddress,
+        ISuperfluid host
+    ) {
+    
+    dPOPAddress = tokenAddress;
+    totalTokenHolders = 0;
+    
+    //initialize InitData struct, and set equal to cfaV1
+    cfaV1 = CFAv1Library.InitData(
+        host,
+        //here, we are deriving the address of the CFA using the host contract
+        IConstantFlowAgreementV1(
+            address(host.getAgreementClass(
+                    keccak256("org.superfluid-finance.agreements.ConstantFlowAgreement.v1")
+                ))
+            )
+        );
     }
 
     function transferdPOP(address _recipientAddress, uint256 _amount) public returns (bool) {

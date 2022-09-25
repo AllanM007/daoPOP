@@ -207,5 +207,11 @@ contract governance{
         emit MemberVote(_member, _id, _vote);
 
     }
+
+    /// @notice this function distributes returns from the protocol's investment equally to each member based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function ditributeReturns() public returns (bool) {
+        return true;
+    }
         
 }
