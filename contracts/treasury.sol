@@ -19,7 +19,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @notice Explain to an end user what this does
 /// @dev Explain to a developer any extra details
 
-contract treasury{
+contract treasury {
 
     address dPOPAddress;
     uint256 public exchangeRate;
@@ -43,11 +43,11 @@ contract treasury{
     CFAv1Library.InitData public cfaV1;
     
     constructor(
-        address tokenAddress,
+        // address tokenAddress,
         ISuperfluid host
     ) {
     
-    dPOPAddress = tokenAddress;
+    // dPOPAddress = tokenAddress;
     // totalTokenHolders = 0;
     
     //initialize InitData struct, and set equal to cfaV1
@@ -60,6 +60,37 @@ contract treasury{
                 ))
             )
         );
+    }
+
+    function initiateReturnFlow(ISuperfluid token, address _member, int96 _rewardRate) public returns (bool) {
+       
+        cfaV1.createFlow(_member, token, _rewardRate);
+
+        emit succesfulCreateReturnsFlow(_member, dPOPAddress, rewardRate);
+
+        return true;
+    }
+
+    /// @notice this function updates a members token distribution flow based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function updateReturnFlow(address _member, int96 _flowRate) public returns (bool) {
+
+        cfaV1.updateFlow(_member, dPOPAddress, _flowRate);
+
+        emit succesfulUpdateReturnsFlow(_member, dPOPAddress, _flowRate);
+
+        return true;
+    }
+
+    /// @notice this function deletes a members token distribution flow based on their 
+    /// engagement using superfluid's CFA Library contracts
+    function deleteReturnFlow(address _member) public returns (bool) {
+
+        cfaV1.deleteFlow(address(0), _member, dPOPAddress);
+
+        emit succesfulDeleteReturnsFlow(address(0), _member, dPOPAddress);
+        
+        return true;
     }
 
     function transferdPOP(address _recipientAddress, uint256 _amount) public returns (bool) {
@@ -109,46 +140,14 @@ contract treasury{
         return true;
     }
 
-    /// @notice set protocol returns reward rate to users
-    function setRewardRate() public returns (bool) {
+    /// @notice set protocol returns reward rate based to users on capital input and participation metrics
+    function setRewardRate() public returns (uint256) {
         uint256 protocolBalance = address(this).balance;
-        int96 protocolReward = int96(protocolBalance) / int96(tokenHolderCount);
-        return true;
+        uint256 protocolReward = protocolBalance / tokenHolderCount;
+
+        return protocolReward;
     }
 
     /// @notice this function distributes returns from the protocol's investment equally to each member based on their 
     /// engagement using superfluid's CFA Library contracts
-    function initiateReturnFlow() public returns (bool) {
-
-        for (uint256 index = 0; index < tokenHolders.length; index++) {
-            
-            cfaV1.createFlow(tokenHolders[index], dPOPAddress, rewardRate);
-
-            emit succesfulCreateReturnsFlow(tokenHolders[index], dPOPAddress, rewardRate);
-        }
-
-        return true;
-    }
-
-    /// @notice this function updates a members token distribution flow based on their 
-    /// engagement using superfluid's CFA Library contracts
-    function updateReturnFlow(address _member, int96 _flowRate) public returns (bool) {
-
-        cfaV1.updateFlow(_member, dPOPAddress, _flowRate);
-
-        emit succesfulUpdateReturnsFlow(_member, dPOPAddress, _flowRate);
-
-        return true;
-    }
-
-    /// @notice this function deletes a members token distribution flow based on their 
-    /// engagement using superfluid's CFA Library contracts
-    function deleteReturnFlow(address _member) public returns (bool) {
-
-        cfaV1.deleteFlow(address(0), _member, dPOPAddress);
-
-        emit succesfulDeleteReturnsFlow(address(0), _member, dPOPAddress);
-        
-        return true;
-    }
 }

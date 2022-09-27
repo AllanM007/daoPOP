@@ -43,10 +43,10 @@ const gas_limit = "0x100000";
 //   signer
 // );
 
-router.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname + "/index.html"));
-  //__dirname : It will resolve to your project folder.
-});
+// router.get("/", function (req, res) {
+//   res.sendFile(path.join(__dirname + "/index.html"));
+//   //__dirname : It will resolve to your project folder.
+// });
 
 router.get("/propose", function (req, res) {
   res.sendFile(path.join(__dirname + "/propose.html"));
@@ -58,7 +58,7 @@ router.get("/vote", function (req, res) {
   //__dirname : It will resolve to your project folder.
 });
 
-router.get("/transfer", function (req, res) {
+router.get("/", function (req, res) {
   res.sendFile(path.join(__dirname + "/transfer.html"));
 });
 
