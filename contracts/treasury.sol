@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
-import { 
-    ISuperfluid 
-} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+// import { 
+//     ISuperfluid 
+// } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
-import { 
-    IConstantFlowAgreementV1 
-} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
+// import { 
+//     IConstantFlowAgreementV1 
+// } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
 
-import {
-    CFAv1Library
-} from "@superfluid-finance/ethereum-contracts/contracts/apps/CFAv1Library.sol";
+// import {
+//     CFAv1Library
+// } from "@superfluid-finance/ethereum-contracts/contracts/apps/CFAv1Library.sol";
     
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -24,6 +24,7 @@ contract treasury {
     address dPOPAddress;
     uint256 public exchangeRate;
     int96 rewardRate;
+    uint256 protocolReward;
     // mapping(uint256 => address) public totalTokenHolders;
     address[] public tokenHolders;
     uint256 tokenHolderCount;
@@ -37,61 +38,61 @@ contract treasury {
     event succesfulUpdateReturnsFlow(address, address, int96);
     event succesfulDeleteReturnsFlow(address, address, int96);
 
-    using CFAv1Library for CFAv1Library.InitData;
+    // using CFAv1Library for CFAv1Library.InitData;
     
-    //initialize cfaV1 variable
-    CFAv1Library.InitData public cfaV1;
+    // //initialize cfaV1 variable
+    // CFAv1Library.InitData public cfaV1;
     
-    constructor(
-        // address tokenAddress,
-        ISuperfluid host
-    ) {
+    // constructor(
+    //     // address tokenAddress,
+    //     ISuperfluid host
+    // ) {
     
-    // dPOPAddress = tokenAddress;
-    // totalTokenHolders = 0;
+    // // dPOPAddress = tokenAddress;
+    // // totalTokenHolders = 0;
     
-    //initialize InitData struct, and set equal to cfaV1
-    cfaV1 = CFAv1Library.InitData(
-        host,
-        //here, we are deriving the address of the CFA using the host contract
-        IConstantFlowAgreementV1(
-            address(host.getAgreementClass(
-                    keccak256("org.superfluid-finance.agreements.ConstantFlowAgreement.v1")
-                ))
-            )
-        );
-    }
+    // //initialize InitData struct, and set equal to cfaV1
+    // cfaV1 = CFAv1Library.InitData(
+    //     host,
+    //     //here, we are deriving the address of the CFA using the host contract
+    //     IConstantFlowAgreementV1(
+    //         address(host.getAgreementClass(
+    //                 keccak256("org.superfluid-finance.agreements.ConstantFlowAgreement.v1")
+    //             ))
+    //         )
+    //     );
+    // }
 
-    function initiateReturnFlow(ISuperfluid token, address _member, int96 _rewardRate) public returns (bool) {
+    // function initiateReturnFlow(ISuperfluid token, address _member, int96 _rewardRate) public returns (bool) {
        
-        cfaV1.createFlow(_member, token, _rewardRate);
+    //     cfaV1.createFlow(_member, token, _rewardRate);
 
-        emit succesfulCreateReturnsFlow(_member, dPOPAddress, rewardRate);
+    //     emit succesfulCreateReturnsFlow(_member, dPOPAddress, rewardRate);
 
-        return true;
-    }
+    //     return true;
+    // }
 
-    /// @notice this function updates a members token distribution flow based on their 
-    /// engagement using superfluid's CFA Library contracts
-    function updateReturnFlow(address _member, int96 _flowRate) public returns (bool) {
+    // /// @notice this function updates a members token distribution flow based on their 
+    // /// engagement using superfluid's CFA Library contracts
+    // function updateReturnFlow(address _member, int96 _flowRate) public returns (bool) {
 
-        cfaV1.updateFlow(_member, dPOPAddress, _flowRate);
+    //     cfaV1.updateFlow(_member, dPOPAddress, _flowRate);
 
-        emit succesfulUpdateReturnsFlow(_member, dPOPAddress, _flowRate);
+    //     emit succesfulUpdateReturnsFlow(_member, dPOPAddress, _flowRate);
 
-        return true;
-    }
+    //     return true;
+    // }
 
-    /// @notice this function deletes a members token distribution flow based on their 
-    /// engagement using superfluid's CFA Library contracts
-    function deleteReturnFlow(address _member) public returns (bool) {
+    // /// @notice this function deletes a members token distribution flow based on their 
+    // /// engagement using superfluid's CFA Library contracts
+    // function deleteReturnFlow(address _member) public returns (bool) {
 
-        cfaV1.deleteFlow(address(0), _member, dPOPAddress);
+    //     cfaV1.deleteFlow(address(0), _member, dPOPAddress);
 
-        emit succesfulDeleteReturnsFlow(address(0), _member, dPOPAddress);
+    //     emit succesfulDeleteReturnsFlow(address(0), _member, dPOPAddress);
         
-        return true;
-    }
+    //     return true;
+    // }
 
     function transferdPOP(address _recipientAddress, uint256 _amount) public returns (bool) {
         ERC20(dPOPAddress).transfer(_recipientAddress, _amount);
@@ -143,7 +144,7 @@ contract treasury {
     /// @notice set protocol returns reward rate based to users on capital input and participation metrics
     function setRewardRate() public returns (uint256) {
         uint256 protocolBalance = address(this).balance;
-        uint256 protocolReward = protocolBalance / tokenHolderCount;
+        protocolReward = protocolBalance / tokenHolderCount;
 
         return protocolReward;
     }

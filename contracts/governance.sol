@@ -206,5 +206,7 @@ contract governance{
 
         emit MemberVote(_member, _id, _vote);
 
+        return true;
+
     }  
 }
