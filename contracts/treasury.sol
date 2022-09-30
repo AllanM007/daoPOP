@@ -38,6 +38,9 @@ contract treasury {
     event succesfulUpdateReturnsFlow(address, address, int96);
     event succesfulDeleteReturnsFlow(address, address, int96);
 
+    /// @notice Superfluid official CFALibrary implementation for reference
+    // https://github.com/superfluid-finance/protocol-monorepo/blob/dev/packages/ethereum-contracts/contracts/mocks/CFALibraryMock.sol
+
     // using CFAv1Library for CFAv1Library.InitData;
     
     // //initialize cfaV1 variable

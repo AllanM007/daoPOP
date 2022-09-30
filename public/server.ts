@@ -1,3 +1,5 @@
+"use strict";
+
 require("dotenv").config();
 const express = require("express");
 const app = express();
@@ -17,16 +19,21 @@ app.use(
 const API_KEY = process.env.ALCHEMY_KEY;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-// const dPOPTokenAddress = process.env.dPOPTokenAddress
-
+const dPOPTokenAddress = process.env.dPOPTokenAddress;
+const treasuryAddress = process.env.treasuryAddress;
+const governanceAddress = process.env.governanceAddress;
+const participationAdapterAddress = process.env.participationAdapterAddress;
 
 // const { json } = require("hardhat/internal/core/par
 const { ethers } = require("ethers");
-// const tokenABI = require("../artifacts/contracts/ERC20.sol/ERC20.json");
+const tokenABI = require("../artifacts/contracts/ERC20.sol/ERC20.json");
+const treasuryABI = require("../artifacts/contracts/treasury.sol/treasury.json");
+const governanceABI = require("../artifacts/contracts/governance.sol/governance.json");
+const participationAdapterABI = require("../artifacts/contracts/participationAdapter.sol/participationAdpater.json");
 
 // Provider
 const alchemyProvider = new ethers.providers.AlchemyProvider(
-  (network = "goerli"),
+  "goerli",
   API_KEY
 );
 
@@ -37,11 +44,32 @@ const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 const gas_limit = "0x100000";
 
 // Token Contract
-// const dPOPTokenContract = new ethers.Contract(
-//   dPOPTokenAddress,
-//   tokenABI.abi,
-//   signer
-// );
+const dPOPTokenContract = new ethers.Contract(
+  dPOPTokenAddress,
+  tokenABI.abi,
+  signer
+);
+
+// governance contract
+const governanceContract = new ethers.Contract(
+  governanceAddress,
+  governanceABI.abi,
+  signer
+);
+
+// participation contract
+const participationAdapterContract = new ethers.Contract(
+  participationAdapterAddress,
+  participationAdapterABI.abi,
+  signer
+);
+
+//treasury contract
+const treasuryContract = new ethers.Contract(
+  treasuryAddress,
+  treasuryABI.abi,
+  signer
+)
 
 // router.get("/", function (req, res) {
 //   res.sendFile(path.join(__dirname + "/index.html"));
@@ -83,14 +111,14 @@ router.get("/personal", function (req, res) {
 });
 
 router.post("/sendProposal", function (req, res) {
-  var data = req.body;
+  let data = req.body;
   console.log(data);
 
-  var usrAddress = data.address;
-  var name = data.name;
-  var description = description;
-  var date = Date.now();
-  var deadline = Date.now();
+  let usrAddress = data.address;
+  let name = data.name;
+  let description = data.description;
+  let date = Date.now();
+  let deadline = Date.now();
 
   console.log("71.", usrAddress, name, description, date, deadline);
 
@@ -134,13 +162,13 @@ async function sendProposal(usrAddress, name, description, date, deadline) {
 }
 
 router.post("/sendProposalVote", function (req, res) {
-  var data = req.body;
+  let data = req.body;
   console.log(data);
 
-  var usrAddress = data.address;
-  var proposalId = data.proposalId;
-  var vote = data.vote;
-  var date = Date.now();
+  let usrAddress = data.address;
+  let proposalId = data.proposalId;
+  let vote = data.vote;
+  let date = Date.now();
 
   console.log("71.", usrAddress, proposalId, vote, date);
 
@@ -175,23 +203,23 @@ async function sendProposalVote(proposalId, usrAddress, vote, date) {
       (event) => event.event === "MemberVote"
     );
 
-    const [member, proposalId, vote] = proposalVoteObject.args;
+    // const [member, proposalId, vote] = proposalVoteObject.args;
 
-    console.log(member.toString(), proposalId, vote.toString());
+    // console.log(member.toString(), proposalId, vote.toString());
   } catch (error) {
     console.log(error);
   }
 }
 
 router.post("/setEngagementMetrics", function (req, res) {
-  var data = req.body;
+  let data = req.body;
   console.log(data);
 
-  var usrAddress = data.address;
-  var proposal = data.proposal;
-  var vote = data.vote;
-  var contribution = data.contribution;
-  var date = Date.now();
+  let usrAddress = data.address;
+  let proposal = data.proposal;
+  let vote = data.vote;
+  let contribution = data.contribution;
+  let date = Date.now();
 
   console.log("71.", usrAddress, proposal, vote, contribution, date);
 
@@ -210,7 +238,7 @@ async function setEngagementMetrics(usrAddress, proposal, vote, contribution, da
   console.log(formattedGasPrice);
 
   try {
-    const sendEngagementMetricsVotetx = await participationAdpater
+    const sendEngagementMetricsVotetx = await participationAdapterContract
       .connect(signer)
       .setMetrics(usrAddress, proposal, vote, contribution, date, {
         gasLimit: 50000,
@@ -226,21 +254,21 @@ async function setEngagementMetrics(usrAddress, proposal, vote, contribution, da
       (event) => event.event === "SetEngagementMetrics"
     );
 
-    const [member, proposalId, vote, contribution0] = engagementVoteObject.args;
+    // var [usrAddress, proposal, vote, contribution] = engagementVoteObject.args;
 
-    console.log(member.toString(), proposalId, vote, contribution, date());
+    // console.log(usrAddress.toString(), proposal, vote, contribution, Date.now());
   } catch (error) {
     console.log(error);
   }
 }
 
 router.get("/getVaultBalance", async function (req, res) {
-  const vault = await collateralAdapterContract.Vault(
+  const vault = await treasuryContract.Vault(
     "0x15cdCBB08cd5b2543A8E009Dbf5a6C6d7D2aB53d"
   );
 
   const fmtVaultBalance = vault.toString() / 10 ** 6;
-  var context = {
+  let context = {
     vaultAmount: fmtVaultBalance,
   };
   console.log("Vault Balance:", fmtVaultBalance);
@@ -255,7 +283,7 @@ router.get("/getAccountdPOPBalance", async function (req, res) {
 
   const fmtDPOPBalance = dpopBalance.toString();
 
-  var context = {
+  let context = {
     dPOPAmount: fmtDPOPBalance,
   };
   console.log("Vault Balance:", fmtDPOPBalance);
@@ -264,11 +292,11 @@ router.get("/getAccountdPOPBalance", async function (req, res) {
 });
 
 router.post("/mintdPOP", function (req, res) {
-  var data = req.body;
+  let data = req.body;
   console.log(data);
 
-  var usrAddress = data.address;
-  var amount = data.amount;
+  let usrAddress = data.address;
+  let amount = data.amount;
 
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -280,7 +308,7 @@ router.post("/mintdPOP", function (req, res) {
 async function calculateUserParticipation(usrAddress) {
 
   try {
-    const calculateUserParticipationtx = await participationAdpater
+    const calculateUserParticipationtx = await participationAdapterContract
       .connect(signer)
       .calculateUserParticipation(usrAddress, { gasLimit: 1000000 });
 
@@ -306,7 +334,7 @@ async function mintdPOP(usrAddress, mintAmount) {
   console.log(formattedGasPrice);
 
   try {
-    const mintdPOPtx = await collateralAdapterContract
+    const mintdPOPtx = await treasuryContract
       .connect(signer)
       .initiateMint(usrAddress, mintAmount, { gasLimit: 1000000 });
 
@@ -325,7 +353,6 @@ async function mintdPOP(usrAddress, mintAmount) {
     console.log(to, value.toString());
 
     // calculatePositionHealthFactor(usrAddress);
-    res.jsonp({success : true})
   } catch (error) {
     console.log(error);
 
@@ -334,11 +361,11 @@ async function mintdPOP(usrAddress, mintAmount) {
 }
 
 router.post("/transferdPOP", function (req, res) {
-  var data = req.body;
+  let data = req.body;
   console.log(data);
 
-  var usrAddress = data.address;
-  var amount = data.amount;
+  let usrAddress = data.address;
+  let amount = data.amount;
 
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -383,32 +410,32 @@ async function transferdPOP(usrAddress, burnAmount) {
 }
 
 router.get("/getProposals", async function (req, res) {
-  proposals = []
+  let proposals = [];
 
   const proposalsCount = await governanceContract.proposalCount();
 
   for (let item = 0; item < proposalsCount; item++) {
-    const activeproposals = await collateralAdapterContract.getPositionHealthFactor(item, { gasLimit: 1000000 });
+    const activeproposals = await governanceContract.getProposalResult(item, { gasLimit: 1000000 });
 
-    var proposalsToString = activeproposals.toString();
+    let proposalsToString = activeproposals.toString();
 
-    var fmtProposals = proposalsToString.split(',');
+    let fmtProposals = proposalsToString.split(',');
 
-    const proposalsMap = [];
+    let proposalsMap;
     const keyArray = ["id", "usrAddress", "debt", "dcr"];
 
     fmtProposals.map(function (value, index) {
       proposalsMap.push(value)
     })
 
-    const proposalsArray = Object.assign.apply({}, keyArray.map( (v, i) => ( {[v]: fmtProposals[i]} ) ) );
+    let proposalsArray = Object.assign.apply({}, keyArray.map( (v, i) => ( {[v]: fmtProposals[i]} ) ) );
 
     proposals.push(proposalsArray);
 
   }
 
-  var context = {
-    data: positions,
+  let context = {
+    data: proposals,
   };
 
   res.json(context);
