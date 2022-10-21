@@ -26,7 +26,7 @@ const participationAdapterAddress = process.env.participationAdapterAddress;
 
 // const { json } = require("hardhat/internal/core/par
 const { ethers } = require("ethers");
-const tokenABI = require("../artifacts/contracts/ERC20.sol/ERC20.json");
+const tokenABI = require("../artifacts/contracts/dPOP.sol/dPOP.json");
 const treasuryABI = require("../artifacts/contracts/treasury.sol/treasury.json");
 const governanceABI = require("../artifacts/contracts/governance.sol/governance.json");
 const participationAdapterABI = require("../artifacts/contracts/participationAdapter.sol/participationAdpater.json");
